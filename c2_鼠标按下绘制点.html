@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+</head>
+<body>
+    <canvas id="webgl" ></canvas>
+    <script>
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'attribute float a_PointSize;'+
+            'void main() {'+
+            ' gl_Position = a_Position;'+
+            ' gl_PointSize = a_PointSize;'+
+            '}';
+        
+        var fragment_shader_source = 
+            'void main() {'+
+            ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        // 获取attribute的存储位置
+        var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+        var a_PointSize = gl.getAttribLocation(gl.program, "a_PointSize");
+
+        // 在js中，将顶点位置传输给attribute的a_Position变量
+        // gl.vertexAttrib3f(a_Position, 0.5, 0.5, 0.0);
+        gl.vertexAttrib1f(a_PointSize, 5.0);
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        // gl.drawArrays(gl.POINTS, 0, 1);
+
+        var pointsArray = [];
+
+        // canvas.onmousedown = function() {
+        //     console.log("钩子函数");
+        // }
+
+        canvas.addEventListener("mousedown", onMouseDown, false);
+
+        function onMouseDown(e) {
+            // console.log("回调函数");
+            var rect = canvas.getBoundingClientRect();
+            var x = -1 + 2 * (e.clientX - rect.left) / rect.width;
+            var y = 1 - 2 * (e.clientY - rect.top) / rect.height;
+
+            pointsArray.push({
+                x: x,
+                y: y
+            });
+
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            /**
+             * webgl系统中的绘制操作实际上是在颜色缓冲区中进行绘制的
+             * 绘制结束后，系统将缓冲区中的内容显示在屏幕上
+             * 然后颜色缓冲区就会被重置，其中的内容会丢失
+             * 因此，有必要将每次鼠标点击的位置都记录下来
+             * 鼠标每次点击之后，程序重新绘制了所有的点
+             */
+            for(var i in pointsArray) {
+                gl.vertexAttrib3f(a_Position, pointsArray[i].x, pointsArray[i].y, 0.0);
+                gl.drawArrays(gl.POINTS, 0, 1);
+            }
+        }
+
+    </script>
+</body>
+</html>

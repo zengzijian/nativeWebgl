@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+</head>
+<body>
+    <canvas id="webgl" ></canvas>
+    <script>
+        // 只有绘制单个点时，才需要设置gl_PointSize 
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'void main() {'+
+            ' gl_Position = a_Position;'+
+            '}';
+        
+        var fragment_shader_source = 
+            'void main() {'+
+            ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        var n = initVertexBuffer();
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        // POINTS, LINES, LINE_STRIP, LINE_LOOP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN
+        gl.drawArrays(gl.TRIANGLES, 0, n);
+
+        function initVertexBuffer() {
+            var vertices = new Float32Array([
+                -0.5, 0.5,
+                0.5, 0.5,
+                -0.5, 0.0,
+                0.5, 0.0,
+                -0.5, -0.5,
+                0.5, -0.5
+            ]);
+            var size = 2;
+            var n = vertices.length/size;
+
+            var vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+
+            gl.vertexAttribPointer(a_Position, size, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(a_Position);
+
+            return n;
+        }
+
+    </script>
+</body>
+</html>

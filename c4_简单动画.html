@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+</head>
+<body>
+    <canvas id="webgl"></canvas>
+    <script>
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'uniform mat4 u_Matrix;'+
+            'void main() {'+
+            ' gl_Position = u_Matrix * a_Position;'+
+            '}';
+        
+        var fragment_shader_source = 
+            'void main() {'+
+            ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        var deltaAngle = 45.0;
+        var currentAngle = 0.0;
+
+        var matrix = new Matrix4();
+        var u_Matrix = gl.getUniformLocation(gl.program, "u_Matrix");
+
+        var n = initVertexBuffer();
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+
+        var last = Date.now();
+        function animate() {
+            var now = Date.now();
+            var delta = now - last;
+            last = now;
+
+            var newAngle = currentAngle + (deltaAngle * delta) / 1000.0;
+            return newAngle %= 360;
+        }
+
+        function draw() {
+            matrix.setRotate(currentAngle, 0, 0, 1);
+            matrix.translate(0.5, 0, 0);
+            gl.uniformMatrix4fv(u_Matrix, false, matrix.elements);
+
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.TRIANGLES, 0, n);
+        }
+
+        function tick() {
+            currentAngle = animate();
+            draw();
+            requestAnimationFrame(tick);
+        }
+        tick();
+
+        function initVertexBuffer() {
+            var vertices = new Float32Array([
+                -0.5, 0.5,
+                0.5, 0.5,
+                -0.5, 0.0,
+                0.5, 0.0,
+                -0.5, -0.5,
+                0.5, -0.5
+            ]);
+            var size = 2;
+            var n = vertices.length/size;
+
+            var vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+
+            gl.vertexAttribPointer(a_Position, size, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(a_Position);
+
+            return n;
+        }
+
+    </script>
+</body>
+</html>

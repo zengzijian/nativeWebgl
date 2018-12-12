@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+</head>
+<body>
+    <canvas id="webgl" ></canvas>
+    <script>
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'attribute float a_PointSize;'+
+            'void main() {'+
+            ' gl_Position = a_Position;'+
+            ' gl_PointSize = a_PointSize;'+
+            '}';
+        
+        // 在片元着色器中添加uniform变量，需要添加精度限定词
+        var fragment_shader_source = 
+            'precision mediump float;'+
+            'uniform vec4 u_FragColor;'+
+            'void main() {'+
+            ' gl_FragColor = u_FragColor;'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        // 获取attribute的存储位置
+        var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+        var a_PointSize = gl.getAttribLocation(gl.program, "a_PointSize");
+        var u_FragColor = gl.getUniformLocation(gl.program, "u_FragColor");
+
+        // 在js中，将顶点位置传输给attribute的a_Position变量
+        // gl.vertexAttrib3f(a_Position, 0.5, 0.5, 0.0);
+        gl.vertexAttrib1f(a_PointSize, 5.0);
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        var pointsArray = [];
+
+        canvas.addEventListener("mousedown", onMouseDown, false);
+
+        function onMouseDown(e) {
+            var rect = canvas.getBoundingClientRect();
+            var x = -1 + 2 * (e.clientX - rect.left) / rect.width;
+            var y = 1 - 2 * (e.clientY - rect.top) / rect.height;
+
+            pointsArray.push({
+                x: x,
+                y: y,
+                color: [
+                    Math.random() * 1.0,
+                    Math.random() * 1.0,
+                    Math.random() * 1.0,
+                    1.0
+                ]
+            });
+
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            for(var i in pointsArray) {
+                var p = pointsArray[i];
+                gl.vertexAttrib3f(a_Position, p.x, p.y, 0.0);
+                gl.uniform4f(u_FragColor, p.color[0], p.color[1], p.color[2], p.color[3]);
+                gl.drawArrays(gl.POINTS, 0, 1);
+            }
+        }
+
+    </script>
+</body>
+</html>

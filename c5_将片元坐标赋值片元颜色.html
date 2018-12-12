@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib0/webgl-utils.js"></script>
+    <script src="lib0/webgl-debug.js"></script>
+    <script src="lib0/cuon-utils.js"></script>
+    <script src="lib0/cuon-matrix.js"></script>
+</head>
+<body>
+    <canvas id="webgl" ></canvas>
+    <script>
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'void main() {'+
+            ' gl_Position = a_Position;'+
+            '}';
+        
+        // 在片元着色器中，添加了varying或者attribute变量，需要精度限定词！！！
+        var fragment_shader_source = 
+            'precision mediump float;'+
+            'uniform float u_Width;'+
+            'uniform float u_Height;'+
+            'void main() {'+
+            ' gl_FragColor = vec4(gl_FragCoord.x / u_Width, 0.0, gl_FragCoord.y / u_Height, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl", {
+            antialias: true
+        });
+
+        initShaders(gl, vertex_shader_source, fragment_shader_source);
+
+        var u_Width = gl.getUniformLocation(gl.program, "u_Width");
+        var u_Height = gl.getUniformLocation(gl.program, "u_Height");
+
+        gl.uniform1f(u_Width, gl.drawingBufferWidth);
+        gl.uniform1f(u_Height, gl.drawingBufferHeight);
+
+        console.log(gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+        var n = initVertexBuffer();
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        // 将gl.POINTS换成gl.TRIANGLES,即可得到彩色的三角形
+        gl.drawArrays(gl.TRIANGLES, 0, n);
+
+        function initVertexBuffer() {
+            var vertices = new Float32Array([
+                // 0.0, 0.5, 5.0, 1.0, 0.0, 0.0,
+                // -0.5, -0.5, 10.0, 0.0, 1.0, 0.0,
+                // 0.5, -0.5, 15.0, 0.0, 0.0, 1.0
+
+                // 左下侧三角形
+                // -1.0, 1.0, 5.0, 1.0, 0.0, 0.0,
+                // -1.0, -1.0, 10.0, 0.0, 1.0, 0.0,
+                // 1.0, -1.0, 15.0, 0.0, 0.0, 1.0
+
+                // 右上侧三角形
+                -1.0, 1.0, 5.0, 1.0, 0.0, 0.0,
+                1.0, 1.0, 10.0, 0.0, 1.0, 0.0,
+                1.0, -1.0, 15.0, 0.0, 0.0, 1.0
+            ]);
+
+            var strideNum = 6;// 类型化数组中，每一个顶点对应的数据的个数
+            var n = vertices.length / strideNum; // 顶点个数
+            var size = vertices.BYTES_PER_ELEMENT; // 每一个数据所对应的字节数
+
+            var vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+
+            gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, size * strideNum, 0);
+
+            gl.enableVertexAttribArray(a_Position);
+            // gl.disableVertexAttribArray(a_Position);
+
+            return n;
+        }
+
+    </script>
+</body>
+</html>

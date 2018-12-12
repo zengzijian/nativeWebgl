@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+</head>
+<body>
+    <canvas id="webgl" ></canvas>
+    <script>
+        // 只有绘制单个点时，才需要设置gl_PointSize 
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'uniform vec4 u_Translation;'+
+            'void main() {'+
+            ' gl_Position = a_Position + u_Translation;'+
+            '}';
+        
+        var fragment_shader_source = 
+            'void main() {'+
+            ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        var tx = 0.2;
+        var ty = 0.2;
+        var tz = 0.0;
+
+        var u_Translation = gl.getUniformLocation(gl.program, "u_Translation");
+
+        // 平移后的顶点坐标的w参数必须为1.0
+        // 由于a_Position的w已经为1.0，因此u_Translation的w值必须为0.0
+        gl.uniform4f(u_Translation, tx, ty, tz, 0.0);
+
+        var n = initVertexBuffer();
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        // POINTS, LINES, LINE_STRIP, LINE_LOOP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN
+        gl.drawArrays(gl.TRIANGLES, 0, n);
+
+        function initVertexBuffer() {
+            var vertices = new Float32Array([
+                -0.5, 0.5,
+                0.5, 0.5,
+                -0.5, 0.0,
+                0.5, 0.0,
+                -0.5, -0.5,
+                0.5, -0.5
+            ]);
+            var size = 2;
+            var n = vertices.length/size;
+
+            var vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+
+            gl.vertexAttribPointer(a_Position, size, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(a_Position);
+
+            return n;
+        }
+
+    </script>
+</body>
+</html>

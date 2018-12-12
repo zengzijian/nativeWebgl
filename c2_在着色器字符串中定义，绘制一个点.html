@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+</head>
+<body>
+    <canvas id="webgl" ></canvas>
+    <script>
+        var vertex_shader_source = 
+            'void main() {'+
+            ' gl_Position = vec4(0.0, 0.0, 0.0, 1.0);'+
+            ' gl_PointSize = 10.0;'+
+            '}';
+        
+        var fragment_shader_source = 
+            'void main() {'+
+            ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        gl.drawArrays(gl.POINTS, 0, 1);
+    </script>
+</body>
+</html>

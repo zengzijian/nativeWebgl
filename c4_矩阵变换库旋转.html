@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+</head>
+<body>
+    <canvas id="webgl"></canvas>
+    <script>
+        var vertex_shader_source = 
+            'attribute vec4 a_Position;'+
+            'uniform mat4 u_Matrix;'+
+            'void main() {'+
+            ' gl_Position = u_Matrix * a_Position;'+
+            '}';
+        
+        var fragment_shader_source = 
+            'void main() {'+
+            ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+            '}';
+
+        var canvas = document.getElementById("webgl");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        var gl = canvas.getContext("webgl");
+
+        initShader(gl, vertex_shader_source, fragment_shader_source);
+
+        var angle = 30.0;
+        var matrix = new Matrix4();
+        // 只需要传入角度，不需要手动转化成弧度
+
+        // 单独操作
+        // matrix.setRotate(angle, 0, 0, 1);
+        // matrix.setTranslate(0.4, 0.3, 0);
+        // matrix.setScale(0.4, 0.6, 0);
+
+        // 复合操作
+        // 先平移，后旋转
+        matrix.setRotate(angle, 0, 0, 1);
+        matrix.translate(0.5, 0, 0);
+
+        // 先旋转，后平移
+        // matrix.setTranslate(0.5, 0, 0);
+        // matrix.rotate(angle, 0, 0, 1);
+
+        var u_Matrix = gl.getUniformLocation(gl.program, "u_Matrix");
+        gl.uniformMatrix4fv(u_Matrix, false, matrix.elements);
+
+        var n = initVertexBuffer();
+
+        gl.clearColor(1.0, 0.0, 0.0, 0.5);
+        gl.clear(gl.COLOR_BUFFER_BIT); 
+
+        // POINTS, LINES, LINE_STRIP, LINE_LOOP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN
+        gl.drawArrays(gl.TRIANGLES, 0, n);
+
+        function initVertexBuffer() {
+            var vertices = new Float32Array([
+                -0.5, 0.5,
+                0.5, 0.5,
+                -0.5, 0.0,
+                0.5, 0.0,
+                -0.5, -0.5,
+                0.5, -0.5
+            ]);
+            var size = 2;
+            var n = vertices.length/size;
+
+            var vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            var a_Position = gl.getAttribLocation(gl.program, "a_Position");
+
+            gl.vertexAttribPointer(a_Position, size, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(a_Position);
+
+            return n;
+        }
+
+    </script>
+</body>
+</html>
