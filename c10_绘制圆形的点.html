@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/webgl-utils.js"></script>
+</head>
+<body>
+<canvas id="webgl" ></canvas>
+<script>
+    var vertex_shader_source =
+        'void main() {'+
+        ' gl_Position = vec4(0.0, 0.0, 0.0, 1.0);'+
+        ' gl_PointSize = 20.0;'+
+        '}';
+
+    var fragment_shader_source =
+        'precision mediump float;'+ //【这一句声明float类型的精度，很重要，不然运行不起来！】
+        'void main() {'+
+        ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+        ' float dist = distance(gl_PointCoord, vec2(0.5,0.5));'+
+        ' if(dist<0.5){'+
+        '   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);'+
+        ' } else {'+
+        '   discard;'+
+        ' }'+
+        '}';
+
+    var canvas = document.getElementById("webgl");
+    canvas.width = 400;
+    canvas.height = 400;
+
+    var gl = canvas.getContext("webgl");
+
+    initShader(gl, vertex_shader_source, fragment_shader_source);
+
+    gl.clearColor(0.0, 0.0, 0.0, 0.5);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.drawArrays(gl.POINTS, 0, 1);
+</script>
+</body>
+</html>
