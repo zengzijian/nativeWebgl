@@ -12,7 +12,15 @@
 </head>
 <body>
 <canvas id="webgl" ></canvas>
+<button q-text="1" id="testBtn">click me!</button>
 <script>
+    var btn = document.getElementById("testBtn");
+    for(var i = 0; i < btn.attributes.length; i++) {
+        var attr = btn.attributes[i];
+        console.log(attr.nodeName, attr.nodeType, attr.nodeValue);
+    }
+
+    // 平面的纹理，和帧缓冲区对象渲染的立方体的纹理，都是用相同的顶点着色器和片元着色器源代码
     var vShader =
         ['attribute vec4 a_Position;',
         'attribute vec2 a_TexCoord;',
@@ -50,10 +58,8 @@
         program.a_TexCoord = gl.getAttribLocation(program, 'a_TexCoord');
 
         var cube = initVertexBuffers();
-        console.log(cube);
 
-        var texture = initTexture(program);
-        console.log(texture);
+        var texture = initTexture();
 
         var plane = initVertexBufferForPlane();
 
@@ -179,7 +185,12 @@
         return o;
     }
 
+    /**
+     * 初始化帧缓冲区对象
+     * @returns {*}
+     */
     function initFramebufferObject() {
+        // 帧缓冲区对象，纹理对象，深度缓冲区对象
         var framebuffer, texture, depthBuffer;
 
         // error tips
@@ -189,20 +200,28 @@
             if(depthBuffer) gl.deleteRenderbuffer(depthBuffer);
         }
 
-        // FBO
+        // 创建FBO
         framebuffer = gl.createFramebuffer();
         if(!framebuffer) return error();
 
+        // 创建纹理对象
         texture = gl.createTexture();
         if(!texture) return error();
+        // 将纹理对象绑定到TEXTURE_2D目标上
         gl.bindTexture(gl.TEXTURE_2D, texture);
+        // texImage2D()函数将已经加载的图片图形数据写到纹理，只不过最后一个参数理应传入image，此处传入null
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        // texParameteri()函数，设置纹理过滤器，过滤器用来控制当图片缩放时像素如何生成插值
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         framebuffer.texture = texture;
 
+        // 创建渲染缓冲器
         depthBuffer = gl.createRenderbuffer();
         if(!depthBuffer) return error();
+        // 将渲染缓冲器绑定到一个目标，这个目标必须是 gl.RENDERBUFFER:可渲染内部格式的单个图像的缓冲区数据存储 !!!
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+        // 创建并初始化renderbuffer对象的数据存储
+        // 第二个参数 是内部格式，gl.DEPTH_COMPONENT16：16个深度位
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT);
 
         // 将纹理对象和渲染缓冲区对象绑定到帧缓冲对象上
@@ -215,6 +234,7 @@
 
         // 为什么解除绑定？
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // 通过给gl.TEXTURE_2D绑定值null，来告诉webgl当前纹理的操作已经结束了
         gl.bindTexture(gl.TEXTURE_2D, null);
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
